@@ -1,0 +1,8 @@
+Lang version 0.01
+=================
+
+Before testing you need to alter the 'test.pl' script to
+have new Lang::SQL() called with a proper DSN!
+
+
+
