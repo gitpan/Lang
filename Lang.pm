@@ -6,7 +6,7 @@ use warnings;
 
 use Lang::Dumb;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 require Exporter;
 use base qw(Exporter);
@@ -15,7 +15,7 @@ use vars qw(@EXPORT);
 @EXPORT = qw(_T);
 
 my $backend=new Lang::Dumb;
-my $language="english";
+my $language="en";
 
 sub init {
   my $lang_backend=shift;
@@ -34,6 +34,10 @@ sub clear_cache {
 sub language {
   my $l=shift;
   $language=$l;
+}
+
+sub set_translation {
+  $backend->set_translation($language,@_);
 }
 
 
@@ -97,10 +101,21 @@ This function actually B<only> calls the backend function
 C<backend->translate($language,$text)>; nothing else. The backend
 must to solve the rest.
 
-=head2 C<clear_cache()> --E<gt> void
+=head2 C<Lang::clear_cache()> --E<gt> void
 
 This function can be used to inform the backend to clear it's
 current cached translations.
+
+=head2 C<Lang::set_translation(text,translation)> --E<gt> boolean
+
+This function can be used to set a translation for a given tuple (language,text).
+The current C<language> setting is used.
+The backend is required to update the translation for this tuple in it's
+translations base. 
+
+If the backend does not support this functionality, it must return C<false>.
+Otherwise, it must update or add (if it does not exist) the translation and 
+return C<true>, if this updating succeeds.
 
 =head2 EXPORT
 

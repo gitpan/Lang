@@ -18,6 +18,12 @@ return $text;
 sub clear_cache {
 }
 
+sub set_translation {
+return 0;
+}
+
+
+
 1;
 
 =head1 NAME

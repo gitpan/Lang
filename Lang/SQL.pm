@@ -2,6 +2,7 @@ package Lang::SQL;
 
 use strict;
 use DBI;
+use DBI::Const::GetInfoType;
 
 my %cache;
 
@@ -20,11 +21,30 @@ sub new {
 
   { # Check existence
 
-    my $sth=$self->{"dbh"}->prepare("SELECT COUNT(text) FROM lang_translations");
+    my $sth=$self->{"dbh"}->prepare("SELECT COUNT(txt) FROM lang_translations");
+    my $dbh=$self->{"dbh"};
+
     if (not $sth->execute()) {
       $sth->finish();
-      $self->{"dbh"}->do("CREATE TABLE lang_translations (text varchar, lang varchar, translation varchar)");
-      $self->{"dbh"}->do("CREATE INDEX lang_translations_idx ON lang_translations(lang,text)");
+
+      my $driver=lc($dbh->{Driver}->{Name});
+
+      if ($driver eq "pg") {
+	$self->{"dbh"}->do("CREATE TABLE lang_translations (txt varchar, lang varchar(32), translation varchar, translated numeric(1))");
+	$self->{"dbh"}->do("CREATE INDEX lang_translations_idx ON lang_translations(lang,txt)");
+      }
+      elsif ($driver eq "mysql") {
+	$self->{"dbh"}->do("CREATE TABLE lang_translations (txt text, lang varchar(32), translation text, translated numeric(1))");
+	$self->{"dbh"}->do("CREATE INDEX lang_translations_idx ON lang_translations(lang,txt)");
+      }
+      elsif ($driver eq "sqlite") {
+	$self->{"dbh"}->do("CREATE TABLE lang_translations (txt text, lang varchar(32), translation text, translated numeric(1))");
+	$self->{"dbh"}->do("CREATE INDEX lang_translations_idx ON lang_translations(lang,txt)");
+      }
+      else {
+	die "Cannot create  table lang_translations (txt varchar(BIG), lang varchar(32), translation varchar(big),translated numeric(1))\n".
+	    "I don't know this database system '$driver'";
+      }
     }
     else {
       $sth->finish();
@@ -52,7 +72,7 @@ sub translate {
       return $cache{"$lang && $text"};
     }
     else {
-      my $sth=$dbh->prepare("SELECT translation FROM lang_translations WHERE text='$text' AND lang='$lang'");
+      my $sth=$dbh->prepare("SELECT translation FROM lang_translations WHERE txt='$text' AND lang='$lang'");
       $sth->execute();
       if ($sth->rows() gt 0) {
 	my @r=$sth->fetchrow_array();
@@ -63,7 +83,7 @@ sub translate {
       else {
 	$cache{"$lang && $text"}=$text;
 	$sth->finish();
-	$dbh->do("INSERT INTO lang_translations (translation, lang, text) VALUES ('$text','$lang','$text')");
+	$dbh->do("INSERT INTO lang_translations (translation, lang, txt, translated) VALUES ('$text','$lang','$text',0)");
 	return $self->translate($lang,$text);
       }
     }
@@ -72,6 +92,34 @@ sub translate {
 
 sub clear_cache {
     %cache = ();
+}
+
+sub set_translation {
+  my $self=shift;
+  my $lang=shift;
+  my $text=shift;
+  my $translation=shift;
+
+  if ($lang eq "") {
+    die "Cannot set a translation for an empty language";
+  }
+
+  my $dbh=$self->{"dbh"};
+
+  my $sth=$dbh->prepare("SELECT translation FROM lang_translations WHERE txt='$text' AND lang='$lang'");
+  $sth->execute();
+  if ($sth->rows() gt 0) {
+    $sth->finish();
+    $dbh->do("UPDATE lang_translations SET translation='$translation', translated=1 WHERE txt='$text' AND lang='$lang'");
+  }
+  else {
+    $sth->finish();
+    $dbh->do("INSERT INTO lang_translations (translation, lang, txt, translated) VALUES ('$text','$lang','$text',0)");
+  }
+
+  $cache{"$lang && $text"}=$translation;
+
+return 1;
 }
 
 1;
@@ -120,6 +168,15 @@ This function will cache all lookups in the database. So after a running
 a program for a while, there won't be a lot of database access anymore 
 for translations. This also means, that a updating translations in the
 database will probably not result in updated translations in the application.
+
+=head2 C<set_translation(language,text,translation)> --E<gt> boolean
+
+This function looks up the tuple (language,text) in the database.
+If it does exist, it updates the translation for this field. 
+Otherwise, it inserts the translation.
+
+This function will cache the translation. Function always returns C<true>
+(i.e. 1).
 
 =head2 C<clear_cache()> --E<gt> void
 

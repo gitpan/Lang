@@ -1,8 +1,20 @@
-Lang version 0.01
+Lang version 0.03
 =================
 
-Before testing you need to alter the 'test.pl' script to
-have new Lang::SQL() called with a proper DSN!
+You should be able to make this package only by issuing:
+
+	perl Makefile.PL
+	make
+	
+	export DSN="a database dsn", e.g. "dbi:Pg:dbname=conf;host=localhost"
+	export DBUSER="a database user", e.g. "conf"
+	export DBPASS="a password for the database user"
+
+	make test
+
+	(sudo) make install
+
+
 
 
 

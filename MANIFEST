@@ -2,7 +2,12 @@ Changes
 Lang.pm
 Lang/SQL.pm
 Lang/Dumb.pm
+Lang/wxLocale.pm
+locale/nl_NL/default.po
+locale/nl_NL/default.mo
 Makefile.PL
 MANIFEST
 README
-test.pl
+t/1.t
+t/2.t
+t/3.t

@@ -5,8 +5,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Lang',
     'VERSION_FROM'	=> 'Lang.pm', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM => 'Lang.pm', # retrieve abstract from module
-       AUTHOR     => 'A. U. Thor <hans@slackware.lan>') : ()),
+    'PREREQ_PM'		=> { DBI => 1.3, Wx => 0.18 }, 
+    'ABSTRACT_FROM'     => 'Lang.pm', # retrieve abstract from module
+    'AUTHOR'            => 'Hans Oesterholt-Dijkema <oesterhol@cpan.org>',
 );
