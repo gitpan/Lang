@@ -1,6 +1,7 @@
 Changes
 Lang.pm
 Lang/SQL.pm
+Lang/Dumb.pm
 Makefile.PL
 MANIFEST
 README

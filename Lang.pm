@@ -4,7 +4,9 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+use Lang::Dumb;
+
+our $VERSION = '0.02';
 
 require Exporter;
 use base qw(Exporter);
@@ -12,7 +14,7 @@ use vars qw(@EXPORT);
 
 @EXPORT = qw(_T);
 
-my $backend;
+my $backend=new Lang::Dumb;
 my $language="english";
 
 sub init {
@@ -23,6 +25,10 @@ sub init {
 sub _T {
   my $text=shift;
 return $backend->translate($language,$text);
+}
+
+sub clear_cache {
+    $backend->clear_cache();
 }
 
 sub language {
@@ -45,11 +51,11 @@ Lang - A module for internationalization
   
   Lang::init(new Lang::SQL("dbi:Pg:dbname=zclass;host=localhost","test","testpass");
   
-  Lang::language("english");
+  Lang::language("en");
 
   print _T("This is a test");
 
-  Lang::language("dutch");
+  Lang::language("nl");
   
   print _T("This is a test");
 
@@ -58,6 +64,7 @@ Lang - A module for internationalization
 This module provides simple string based internationalization support. It
 exports a '_T' function that can be used for all text that need displayed.
 It can work with different backends, e.g. SQL or file based backends. 
+The backend defaults to Lang::Dumb, which doesn't translate at all.
 
 =head1 DESCRIPTION
 
@@ -89,6 +96,11 @@ for 'text' given the provided language.
 This function actually B<only> calls the backend function 
 C<backend->translate($language,$text)>; nothing else. The backend
 must to solve the rest.
+
+=head2 C<clear_cache()> --E<gt> void
+
+This function can be used to inform the backend to clear it's
+current cached translations.
 
 =head2 EXPORT
 

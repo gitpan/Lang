@@ -63,12 +63,15 @@ sub translate {
       else {
 	$cache{"$lang && $text"}=$text;
 	$sth->finish();
-	print "lang: $lang, text: $text\n";
 	$dbh->do("INSERT INTO lang_translations (translation, lang, text) VALUES ('$text','$lang','$text')");
 	return $self->translate($lang,$text);
       }
     }
   }
+}
+
+sub clear_cache {
+    %cache = ();
 }
 
 1;
@@ -86,11 +89,11 @@ Lang::SQL - A backend for Lang internationalization
   
   Lang::init(new Lang::SQL("dbi:Pg:dbname=zclass;host=localhost","test","testpass");
   
-  Lang::language("english");
+  Lang::language("en");
 
   print _T("This is a test");
 
-  Lang::language("dutch");
+  Lang::language("nl");
   
   print _T("This is a test");
 
@@ -117,6 +120,10 @@ This function will cache all lookups in the database. So after a running
 a program for a while, there won't be a lot of database access anymore 
 for translations. This also means, that a updating translations in the
 database will probably not result in updated translations in the application.
+
+=head2 C<clear_cache()> --E<gt> void
+
+This function will clear the cache of translations.
 
 =head1 BUGS
 
